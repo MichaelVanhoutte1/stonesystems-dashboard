@@ -69,7 +69,9 @@ export interface GMBExpertMetrics {
 // API Response Types
 export interface CSMStatsResponse {
   clientOnboarding: ClientOnboardingMetrics[];
+  customerRetention: CustomerRetentionMetrics[];
   totals: ClientOnboardingMetrics;
+  customerRetentionTotals: CustomerRetentionMetrics;
 }
 
 // Table Column Configuration

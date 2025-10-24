@@ -12,8 +12,6 @@ import { ErrorDisplay } from "./components/ErrorDisplay";
 import {
   clientOnboardingConfig,
   customerRetentionConfig,
-  accountExpansionConfig,
-  gmbExpertConfig,
 } from "./config/table-configs";
 import { CSMStatsResponse, DateRange, LoadingState } from "./types";
 import { processClientDataToCSMStats } from "./helpers/process-csm-stats";
@@ -154,6 +152,17 @@ export default function CSMStats() {
                 config={{
                   ...clientOnboardingConfig,
                   data: [...data.clientOnboarding, data.totals],
+                }}
+              />
+
+              {/* Customer Retention */}
+              <DataTable
+                config={{
+                  ...customerRetentionConfig,
+                  data: [
+                    ...data.customerRetention,
+                    data.customerRetentionTotals,
+                  ],
                 }}
               />
             </div>

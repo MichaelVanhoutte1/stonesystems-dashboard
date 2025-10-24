@@ -1,4 +1,8 @@
-import { CSMStatsResponse, ClientOnboardingMetrics } from "../types";
+import {
+  CSMStatsResponse,
+  ClientOnboardingMetrics,
+  CustomerRetentionMetrics,
+} from "../types";
 import { ClientData } from "@/lib/types/client";
 
 /**
@@ -20,12 +24,21 @@ export const processClientDataToCSMStats = (
     calculateClientOnboardingFromData(clients, csmName)
   );
 
+  // Calculate customer retention metrics from real data
+  const customerRetention = csmNames.map((csmName) =>
+    calculateCustomerRetentionFromData(clients, csmName)
+  );
+
   //   Calculate totals
   const totals = calculateClientOnboardingTotals(clientOnboarding);
+  const customerRetentionTotals =
+    calculateCustomerRetentionTotals(customerRetention);
 
   return {
     clientOnboarding,
+    customerRetention,
     totals,
+    customerRetentionTotals,
   };
 };
 
@@ -139,6 +152,148 @@ const calculateClientOnboardingTotals = (
     activatedUnder30DaysPercentage,
   };
 };
+
+/**
+ * Calculate totals across all CSMs for customer retention metrics
+ */
+const calculateCustomerRetentionTotals = (
+  customerRetention: CustomerRetentionMetrics[]
+): CustomerRetentionMetrics => {
+  // Sum all numeric values
+  const clientsManaging = customerRetention.reduce(
+    (sum, csm) => sum + csm.clientsManaging,
+    0
+  );
+  const churned = customerRetention.reduce((sum, csm) => sum + csm.churned, 0);
+  const csatCount = customerRetention.reduce(
+    (sum, csm) => sum + csm.csatCount,
+    0
+  );
+  const ccDeclined = customerRetention.reduce(
+    (sum, csm) => sum + csm.ccDeclined,
+    0
+  );
+
+  // Calculate weighted averages for percentages
+  const inactiveClientsPercentage =
+    clientsManaging > 0
+      ? Math.round(
+          (customerRetention.reduce(
+            (sum, csm) =>
+              sum + csm.inactiveClientsPercentage * csm.clientsManaging,
+            0
+          ) /
+            clientsManaging) *
+            100
+        ) / 100
+      : 0;
+
+  const csatGoodPercentage =
+    csatCount > 0
+      ? Math.round(
+          (customerRetention.reduce(
+            (sum, csm) => sum + csm.csatGoodPercentage * csm.csatCount,
+            0
+          ) /
+            csatCount) *
+            100
+        ) / 100
+      : 0;
+
+  const ccDeclinedRate =
+    clientsManaging > 0
+      ? Math.round((ccDeclined / clientsManaging) * 100 * 100) / 100
+      : 0;
+
+  const churnRate =
+    clientsManaging > 0
+      ? Math.round((churned / clientsManaging) * 100 * 100) / 100
+      : 0;
+
+  const refundDisputeRate =
+    clientsManaging > 0
+      ? Math.round(
+          (customerRetention.reduce(
+            (sum, csm) => sum + csm.refundDisputeRate * csm.clientsManaging,
+            0
+          ) /
+            clientsManaging) *
+            100
+        ) / 100
+      : 0;
+
+  // Calculate weighted averages for numeric fields
+  const avgMonthlyUsagePerClient =
+    clientsManaging > 0
+      ? Math.round(
+          (customerRetention.reduce(
+            (sum, csm) =>
+              sum + csm.avgMonthlyUsagePerClient * csm.clientsManaging,
+            0
+          ) /
+            clientsManaging) *
+            100
+        ) / 100
+      : 0;
+
+  const avgMonthlyReviews =
+    clientsManaging > 0
+      ? Math.round(
+          (customerRetention.reduce(
+            (sum, csm) => sum + csm.avgMonthlyReviews * csm.clientsManaging,
+            0
+          ) /
+            clientsManaging) *
+            100
+        ) / 100
+      : 0;
+
+  const avgMonthlyNewLeads =
+    clientsManaging > 0
+      ? Math.round(
+          (customerRetention.reduce(
+            (sum, csm) => sum + csm.avgMonthlyNewLeads * csm.clientsManaging,
+            0
+          ) /
+            clientsManaging) *
+            100
+        ) / 100
+      : 0;
+
+  // Calculate weighted average for CHI
+  const chi =
+    clientsManaging > 0
+      ? Math.round(
+          (customerRetention.reduce(
+            (sum, csm) => sum + csm.chi * csm.clientsManaging,
+            0
+          ) /
+            clientsManaging) *
+            100
+        ) / 100
+      : 0;
+
+  return {
+    csm: "Totals",
+    clientsManaging,
+    chi,
+    inactiveClientsPercentage,
+    avgMonthlyUsagePerClient,
+    avgMonthlyReviews,
+    avgMonthlyNewLeads,
+    csatCount,
+    csatGoodPercentage,
+    ccDeclined,
+    ccDeclinedRate,
+    refundDisputeRate,
+    churned,
+    churnRate,
+  };
+};
+
+// ===========================================================/
+// Other helper functions
+// ===========================================================/
 
 /**
  * Calculate weighted average duration from an array of duration-weight pairs
@@ -335,4 +490,93 @@ const parseDurationToMinutes = (duration: string): number => {
   const minutes = parseInt(match[3]) || 0;
 
   return days * 24 * 60 + hours * 60 + minutes;
+};
+
+/**
+ * Calculate customer retention metrics from raw client data
+ */
+const calculateCustomerRetentionFromData = (
+  clients: ClientData[],
+  csmName: string
+): CustomerRetentionMetrics => {
+  const csmClients = clients.filter((client) => client["CSM Name"] === csmName);
+
+  // Basic counts
+  const clientsManaging = csmClients.length;
+  const churned = csmClients.filter(
+    (client) => client.churned_on !== null
+  ).length;
+
+  // Calculate inactive clients (no meaningful activity in last 30 days)
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const inactiveClients = csmClients.filter((client) => {
+    if (!client.last_meaningful_activity_time) return true;
+    const lastActivity = new Date(client.last_meaningful_activity_time);
+    return lastActivity < thirtyDaysAgo;
+  }).length;
+
+  const inactiveClientsPercentage =
+    clientsManaging > 0
+      ? Math.round((inactiveClients / clientsManaging) * 100 * 100) / 100
+      : 0;
+
+  // Calculate averages (using available data)
+  const totalUsage = csmClients.reduce(
+    (sum, client) => sum + (client.total_usage || 0),
+    0
+  );
+  const avgMonthlyUsagePerClient =
+    clientsManaging > 0
+      ? Math.round((totalUsage / clientsManaging) * 100) / 100
+      : 0;
+
+  const totalReviews = csmClients.reduce(
+    (sum, client) => sum + (client.new_reviews || 0),
+    0
+  );
+  const avgMonthlyReviews =
+    clientsManaging > 0
+      ? Math.round((totalReviews / clientsManaging) * 100) / 100
+      : 0;
+
+  const totalLeads = csmClients.reduce(
+    (sum, client) => sum + (client.new_website_leads || 0),
+    0
+  );
+  const avgMonthlyNewLeads =
+    clientsManaging > 0
+      ? Math.round((totalLeads / clientsManaging) * 100) / 100
+      : 0;
+
+  // Placeholder values for metrics not available in current data
+  const chi = 0; // Customer Health Index - would need additional data
+  const csatCount = 0; // CSAT Count - would need additional data
+  const csatGoodPercentage = 0; // CSAT Good % - would need additional data
+  const ccDeclined = 0; // CC Declined - would need additional data
+  const ccDeclinedRate = 0; // CC Declined Rate - would need additional data
+  const refundDisputeRate = 0; // Refund/Dispute Rate - would need additional data
+
+  const churnRate =
+    clientsManaging > 0
+      ? Math.round((churned / clientsManaging) * 100 * 100) / 100
+      : 0;
+
+  return {
+    csm: csmName,
+    clientsManaging,
+    chi,
+    inactiveClientsPercentage,
+    avgMonthlyUsagePerClient,
+    avgMonthlyReviews,
+    avgMonthlyNewLeads,
+    csatCount,
+    csatGoodPercentage,
+    ccDeclined,
+    ccDeclinedRate,
+    refundDisputeRate,
+    churned,
+    churnRate,
+  };
 };
