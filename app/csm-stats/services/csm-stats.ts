@@ -1,20 +1,13 @@
 import { supabase } from "@/lib/supabase";
-import { DateRange } from "../types";
 import { ClientData } from "@/lib/types/client";
 
 /**
- * Fetch CSM statistics for a given date range
+ * Fetch all clients data (for both onboarding and retention metrics)
  */
-export const fetchCSMStats = async (
-  dateRange: DateRange
-): Promise<ClientData[]> => {
+export const fetchCSMStats = async (): Promise<ClientData[]> => {
   try {
-    // Fetch clients data within the date range
-    const { data: clients, error } = await supabase
-      .from("clients")
-      .select("*")
-      .gte("started_on", dateRange.startDate)
-      .lte("started_on", dateRange.endDate);
+    // Fetch all clients data (no date filter)
+    const { data: clients, error } = await supabase.from("clients").select("*");
 
     if (error) {
       throw new Error(`Failed to fetch clients: ${error.message}`);

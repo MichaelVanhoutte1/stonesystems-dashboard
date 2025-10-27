@@ -2,14 +2,18 @@ import {
   CSMStatsResponse,
   ClientOnboardingMetrics,
   CustomerRetentionMetrics,
+  DateRange,
 } from "../types";
 import { ClientData } from "@/lib/types/client";
 
 /**
  * Process raw client data into CSM stats format
+ * @param clients - All client data from the database
+ * @param dateRange - Date range for filtering onboarding metrics only
  */
 export const processClientDataToCSMStats = (
-  clients: ClientData[]
+  clients: ClientData[],
+  dateRange: DateRange
 ): CSMStatsResponse => {
   // Hardcoded CSM names as specified
   const csmNames = [
@@ -19,12 +23,21 @@ export const processClientDataToCSMStats = (
     "Nicolas Vasquez",
   ];
 
-  // Calculate client onboarding metrics from real data
+  // Filter clients by date range for onboarding metrics
+  const onboardingClients = clients.filter((client) => {
+    if (!client.started_on) return false;
+    const startedDate = client.started_on;
+    return (
+      startedDate >= dateRange.startDate && startedDate <= dateRange.endDate
+    );
+  });
+
+  // Calculate client onboarding metrics from date-filtered data
   const clientOnboarding = csmNames.map((csmName) =>
-    calculateClientOnboardingFromData(clients, csmName)
+    calculateClientOnboardingFromData(onboardingClients, csmName)
   );
 
-  // Calculate customer retention metrics from real data
+  // Calculate customer retention metrics from all client data (no date filter)
   const customerRetention = csmNames.map((csmName) =>
     calculateCustomerRetentionFromData(clients, csmName)
   );

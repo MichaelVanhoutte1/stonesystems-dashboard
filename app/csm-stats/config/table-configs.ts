@@ -11,7 +11,7 @@ export const clientOnboardingConfig: TableConfig<ClientOnboardingMetrics> = {
   title: "Client Onboarding",
   columns: [
     { key: "csm", label: "CSM", type: "text" },
-    { key: "newClients", label: "New Clients", type: "number" },
+    { key: "newClients", label: "New Clients", type: "integer" },
     { key: "formsMissing", label: "Forms Missing", type: "todo" },
     { key: "formCompletePercentage", label: "Form Complete %", type: "todo" },
     {
@@ -59,7 +59,7 @@ export const customerRetentionConfig: TableConfig<CustomerRetentionMetrics> = {
   title: "Customer Retention",
   columns: [
     { key: "csm", label: "CSM", type: "text" },
-    { key: "clientsManaging", label: "Clients Managing", type: "number" },
+    { key: "clientsManaging", label: "Clients Managing", type: "integer" },
     { key: "chi", label: "CHI", type: "todo" },
     {
       key: "inactiveClientsPercentage",

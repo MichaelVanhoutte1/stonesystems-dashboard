@@ -52,12 +52,14 @@ export default function CSMStats() {
     setStatsLoading({ isLoading: true, error: null });
 
     try {
-      // Fetch real data from Supabase
-      const clients = await fetchCSMStats(currentDateRange);
+      // Fetch all clients data from Supabase
+      const allClients = await fetchCSMStats();
 
       // Process the raw client data into CSM stats format
+      // Pass dateRange for onboarding metrics filtering
       const processedData = processClientDataToCSMStats(
-        clients as ClientData[]
+        allClients as ClientData[],
+        currentDateRange
       );
 
       setData(processedData);

@@ -78,7 +78,7 @@ export interface CSMStatsResponse {
 export interface TableColumn<T> {
   key: keyof T;
   label: string;
-  type: "number" | "percentage" | "duration" | "text" | "todo";
+  type: "number" | "integer" | "percentage" | "duration" | "text" | "todo";
   isCalculated?: boolean;
   className?: string;
 }

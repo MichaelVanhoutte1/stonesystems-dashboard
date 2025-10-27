@@ -13,6 +13,9 @@ const getDisplayValue = (value: any, type: string) => {
   if (type === "number") {
     return value.toFixed(2);
   }
+  if (type === "integer") {
+    return Math.round(value).toString();
+  }
   return value;
 };
 
