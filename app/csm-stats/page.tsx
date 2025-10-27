@@ -60,8 +60,6 @@ export default function CSMStats() {
         clients as ClientData[]
       );
 
-      console.log({ processedData });
-
       setData(processedData);
       setStatsLoading({ isLoading: false, error: null });
     } catch (error) {

@@ -13,8 +13,8 @@ export const fetchCSMStats = async (
     const { data: clients, error } = await supabase
       .from("clients")
       .select("*")
-      .gte("created_at", dateRange.startDate)
-      .lte("created_at", dateRange.endDate);
+      .gte("started_on", dateRange.startDate)
+      .lte("started_on", dateRange.endDate);
 
     if (error) {
       throw new Error(`Failed to fetch clients: ${error.message}`);

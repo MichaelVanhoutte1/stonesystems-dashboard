@@ -330,8 +330,6 @@ const calculateClientOnboardingFromData = (
 ) => {
   const csmClients = clients.filter((client) => client["CSM Name"] === csmName);
 
-  console.log({ csmClients });
-
   const newClients = csmClients.length;
   const formsCompleted = csmClients.filter(
     (client) => client.form_complete_time
@@ -348,7 +346,7 @@ const calculateClientOnboardingFromData = (
   const formCompleteTimes = csmClients
     .filter((client) => client.form_complete_time)
     .map((client) =>
-      calculateTimeDifference(client.created_at, client.form_complete_time!)
+      calculateTimeDifference(client.started_on, client.form_complete_time!)
     );
   const formCompleteTimeAvg = calculateAverageDuration(formCompleteTimes);
 
@@ -365,8 +363,9 @@ const calculateClientOnboardingFromData = (
   const timeToOnboardCalls = csmClients
     .filter((client) => client.onboarding_call_time)
     .map((client) =>
-      calculateTimeDifference(client.created_at, client.onboarding_call_time!)
+      calculateTimeDifference(client.started_on, client.onboarding_call_time!)
     );
+  console.log({ timeToOnboardCalls });
   const timeToOnboardCallAvg = calculateAverageDuration(timeToOnboardCalls);
 
   // Calculate launch call metrics
@@ -382,7 +381,7 @@ const calculateClientOnboardingFromData = (
   const timeToLaunchCalls = csmClients
     .filter((client) => client.launch_call_time)
     .map((client) =>
-      calculateTimeDifference(client.created_at, client.launch_call_time!)
+      calculateTimeDifference(client.started_on, client.launch_call_time!)
     );
   const timeToLaunchCallAvg = calculateAverageDuration(timeToLaunchCalls);
 
@@ -404,8 +403,8 @@ const calculateClientOnboardingFromData = (
       client.minutes_to_100_usage === null ||
       client.minutes_to_100_usage === undefined
     )
-      return true;
-    return client.minutes_to_100_usage >= 43200;
+      return false;
+    return client.minutes_to_100_usage <= 43200;
   });
 
   const activatedUnder30Days = filteredClients.length;
@@ -450,7 +449,8 @@ const calculateTimeDifference = (
   if (diffMs < 0) return "0d 0h 0m";
 
   const totalMinutes = Math.floor(diffMs / (1000 * 60));
-  return minutesToDuration(totalMinutes);
+  return totalMinutes.toString();
+  // return minutesToDuration(totalMinutes);
 };
 
 /**
@@ -471,7 +471,7 @@ const calculateAverageDuration = (durations: string[]): string => {
   if (durations.length === 0) return "0d 0h 0m";
 
   const totalMinutes = durations.reduce((sum, duration) => {
-    return sum + parseDurationToMinutes(duration);
+    return sum + +duration;
   }, 0);
 
   const averageMinutes = Math.round(totalMinutes / durations.length);
@@ -502,7 +502,10 @@ const calculateCustomerRetentionFromData = (
   const csmClients = clients.filter((client) => client["CSM Name"] === csmName);
 
   // Basic counts
-  const clientsManaging = csmClients.length;
+  const clientsManaging = csmClients.filter(
+    (client) => client.status === "Active"
+  ).length;
+
   const churned = csmClients.filter(
     (client) => client.churned_on !== null
   ).length;
@@ -554,8 +557,14 @@ const calculateCustomerRetentionFromData = (
   const chi = 0; // Customer Health Index - would need additional data
   const csatCount = 0; // CSAT Count - would need additional data
   const csatGoodPercentage = 0; // CSAT Good % - would need additional data
-  const ccDeclined = 0; // CC Declined - would need additional data
-  const ccDeclinedRate = 0; // CC Declined Rate - would need additional data
+
+  const ccDeclined = csmClients.filter(
+    (client) => client.status === "CC Declined"
+  ).length;
+  const ccDeclinedRate =
+    clientsManaging > 0
+      ? Math.round((ccDeclined / clientsManaging) * 100 * 100) / 100
+      : 0;
   const refundDisputeRate = 0; // Refund/Dispute Rate - would need additional data
 
   const churnRate =
