@@ -44,7 +44,7 @@ export const fetchClients = async (
  */
 export const getStatusOptions = async (): Promise<string[]> => {
   try {
-    const { data, error } = await supabase.from("clients").select("status");
+    const { data, error } = await supabase.from("clients").select("*");
 
     if (error) {
       throw new Error(`Failed to fetch status options: ${error.message}`);
@@ -53,7 +53,7 @@ export const getStatusOptions = async (): Promise<string[]> => {
     // Get unique, non-null status values
     const uniqueStatuses = Array.from(
       new Set(
-        data
+        (data as Client[] | null)
           ?.map((c) => c.status)
           .filter((status): status is string => status !== null)
       )
@@ -71,7 +71,7 @@ export const getStatusOptions = async (): Promise<string[]> => {
  */
 export const getCSMNameOptions = async (): Promise<string[]> => {
   try {
-    const { data, error } = await supabase.from("clients").select("CSM Name");
+    const { data, error } = await supabase.from("clients").select("*");
 
     if (error) {
       throw new Error(`Failed to fetch CSM name options: ${error.message}`);
@@ -80,7 +80,7 @@ export const getCSMNameOptions = async (): Promise<string[]> => {
     // Get unique, non-null CSM names
     const uniqueCSMNames = Array.from(
       new Set(
-        data
+        (data as Client[] | null)
           ?.map((c) => c["CSM Name"])
           .filter((name): name is string => name !== null)
       )
