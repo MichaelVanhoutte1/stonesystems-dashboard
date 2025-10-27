@@ -39,7 +39,7 @@ export const processClientDataToCSMStats = (
 
   // Calculate customer retention metrics from all client data (no date filter)
   const customerRetention = csmNames.map((csmName) =>
-    calculateCustomerRetentionFromData(clients, csmName)
+    calculateCustomerRetentionFromData(clients, csmName, dateRange)
   );
 
   //   Calculate totals
@@ -510,7 +510,8 @@ const parseDurationToMinutes = (duration: string): number => {
  */
 const calculateCustomerRetentionFromData = (
   clients: ClientData[],
-  csmName: string
+  csmName: string,
+  dateRange: DateRange
 ): CustomerRetentionMetrics => {
   const csmClients = clients.filter((client) => client["CSM Name"] === csmName);
 
@@ -520,7 +521,10 @@ const calculateCustomerRetentionFromData = (
   ).length;
 
   const churned = csmClients.filter(
-    (client) => client.churned_on !== null
+    (client) =>
+      client.churned_on !== null &&
+      client.churned_on >= dateRange.startDate &&
+      client.churned_on <= dateRange.endDate
   ).length;
 
   // Calculate inactive clients (no meaningful activity in last 30 days)
