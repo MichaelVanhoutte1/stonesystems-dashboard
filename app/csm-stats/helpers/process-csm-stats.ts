@@ -530,7 +530,7 @@ const calculateCustomerRetentionFromData = (
   const inactiveClients = csmClients.filter((client) => {
     if (!client.last_meaningful_activity_time) return true;
     const lastActivity = new Date(client.last_meaningful_activity_time);
-    return lastActivity < thirtyDaysAgo;
+    return lastActivity > thirtyDaysAgo;
   }).length;
 
   const inactiveClientsPercentage =
