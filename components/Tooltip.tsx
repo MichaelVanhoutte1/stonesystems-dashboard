@@ -23,14 +23,11 @@ export default function Tooltip({
       const triggerRect = triggerRef.current.getBoundingClientRect();
       const tooltipRect = tooltipRef.current.getBoundingClientRect();
 
-      setPosition({
-        top: triggerRect.bottom + window.scrollY + 8,
-        left:
-          triggerRect.left +
-          window.scrollX +
-          triggerRect.width / 2 -
-          tooltipRect.width / 2,
-      });
+      const top = triggerRect.bottom + 8; // 8px below trigger
+      const left =
+        triggerRect.left + triggerRect.width / 2 - tooltipRect.width / 2;
+
+      setPosition({ top, left });
     }
   };
 
@@ -58,20 +55,20 @@ export default function Tooltip({
       ref={triggerRef}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="relative inline-block"
+      className="relative inline-flex items-center"
     >
       {children}
       {isVisible && (
         <div
           ref={tooltipRef}
-          className="absolute z-50 px-3 py-2 text-sm text-white bg-gray-900 rounded-md shadow-lg whitespace-nowrap"
+          className="fixed z-50 px-2.5 py-1.5 text-xs text-white bg-gray-900 rounded-md shadow-lg whitespace-nowrap"
           style={{
             top: position.top,
             left: position.left,
           }}
         >
           {content}
-          <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
+          <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
         </div>
       )}
     </div>

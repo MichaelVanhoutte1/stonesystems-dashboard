@@ -7,7 +7,7 @@ import Navbar from "@/components/Navbar";
 import { fetchClients } from "./services/clients";
 import { Client, ClientFilters } from "./types";
 import { clientsTableConfig } from "./config/table-config";
-import { ClientDataTable } from "./components/ClientDataTable";
+import DataTable from "@/components/DataTable";
 import ClientFiltersPanel from "./components/ClientFilters";
 
 export default function Clients() {
@@ -120,11 +120,15 @@ export default function Clients() {
 
           {/* Data Table */}
           {!isLoading && !error && (
-            <ClientDataTable
+            <DataTable
               config={{
                 ...clientsTableConfig,
                 data: clients,
               }}
+              showCountInTitle
+              minTableWidth={1600}
+              stickyColumns={["client_id", "status"]}
+              stickyColumnWidths={["200px", "200px"]}
             />
           )}
         </div>

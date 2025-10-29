@@ -86,20 +86,20 @@ export default function Navbar() {
       icon: Users,
       badge: null,
     },
-    {
-      name: "Appointments",
-      href: "#",
-      disabled: true,
-      icon: Calendar,
-      badge: "Soon",
-    },
-    {
-      name: "Opportunities",
-      href: "#",
-      disabled: true,
-      icon: Target,
-      badge: "Soon",
-    },
+    // {
+    //   name: "Appointments",
+    //   href: "#",
+    //   disabled: true,
+    //   icon: Calendar,
+    //   badge: "Soon",
+    // },
+    // {
+    //   name: "Opportunities",
+    //   href: "#",
+    //   disabled: true,
+    //   icon: Target,
+    //   badge: "Soon",
+    // },
   ];
 
   const handleNavigation = (href: string, disabled: boolean) => {

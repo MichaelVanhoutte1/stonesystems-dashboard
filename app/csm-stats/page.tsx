@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import Navbar from "@/components/Navbar";
 import { fetchCSMStats } from "./services/csm-stats";
-import { DataTable } from "./components/DataTable";
+import DataTable from "@/components/DataTable";
 import { DateRangePicker } from "./components/DateRangePicker";
 import { LoadingSpinner } from "./components/LoadingSpinner";
 import { ErrorDisplay } from "./components/ErrorDisplay";
@@ -119,8 +119,8 @@ export default function CSMStats() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
+      <main className="w-full py-6 px-4">
+        <div className="w-full px-0 py-6">
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">CSM Stats</h1>
