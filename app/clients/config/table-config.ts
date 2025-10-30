@@ -4,6 +4,7 @@ import { Client } from "../types";
 export const clientsTableConfig: TableConfig<Client> = {
   title: "Clients",
   columns: [
+    // Existing columns (unchanged)
     {
       key: "client_id",
       label: "Client ID",
@@ -31,25 +32,25 @@ export const clientsTableConfig: TableConfig<Client> = {
     {
       key: "total_usage",
       label: "Total Usage",
-      type: "number",
+      type: "integer",
       description: "Cumulative usage count",
     },
     {
       key: "inbound_calls",
       label: "Inbound Calls",
-      type: "number",
+      type: "integer",
       description: "Total inbound calls",
     },
     {
       key: "new_reviews",
       label: "New Reviews",
-      type: "number",
+      type: "integer",
       description: "Reviews received recently",
     },
     {
       key: "new_website_leads",
       label: "New Website Leads",
-      type: "number",
+      type: "integer",
       description: "Leads captured on site",
     },
     {
@@ -105,6 +106,109 @@ export const clientsTableConfig: TableConfig<Client> = {
       label: "Minutes to First Value",
       type: "number",
       description: "Time to first meaningful value",
+    },
+    // Additional requested columns; will show N/A until backend populates
+    {
+      key: "Company Name",
+      label: "Company Name",
+      type: "text",
+      description: "Business name",
+    },
+    {
+      key: "Name",
+      label: "Name",
+      type: "text",
+      description: "Primary contact name",
+    },
+    {
+      key: "Closer",
+      label: "Closer",
+      type: "text",
+      description: "Sales closer",
+    },
+    {
+      key: "Contact ID",
+      label: "Contact ID",
+      type: "text",
+      description: "CRM contact identifier",
+    },
+    {
+      key: "Location ID",
+      label: "Location ID",
+      type: "text",
+      description: "CRM location identifier",
+    },
+    {
+      key: "Website Link",
+      label: "Website Link",
+      type: "text",
+      description: "Client website URL",
+    },
+    {
+      key: "Phone Number",
+      label: "Phone Number",
+      type: "text",
+      description: "Primary phone",
+    },
+    {
+      key: "E-mail",
+      label: "E-mail",
+      type: "text",
+      description: "Primary email",
+    },
+    {
+      key: "Stripe Customer ID",
+      label: "Stripe Customer ID",
+      type: "text",
+      description: "Stripe customer reference",
+    },
+    {
+      key: "Time Enrolled",
+      label: "Time Enrolled",
+      type: "timestamp",
+      description: "Enrollment timestamp",
+    },
+    {
+      key: "Cancellation Reason",
+      label: "Cancellation Reason",
+      type: "text",
+      description: "Stated reason for cancel",
+    },
+    {
+      key: "Site Done",
+      label: "Site Done",
+      type: "text",
+      description: "Website delivery status",
+    },
+    {
+      key: "Delivery Person",
+      label: "Delivery Person",
+      type: "text",
+      description: "Assigned delivery owner",
+    },
+    {
+      key: "Cancellation Notes",
+      label: "Cancellation Notes",
+      type: "text",
+      description: "Additional cancellation notes",
+    },
+    {
+      key: "AI Content Created",
+      label: "AI Content Created",
+      type: "text",
+      description: "AI content status",
+    },
+    {
+      key: "A2P",
+      label: "A2P",
+      type: "text",
+      description: "A2P registration status",
+    },
+    {
+      key: "Referrer",
+      label: "Referrer",
+      type: "text",
+      description: "Lead source referrer",
     },
   ],
   data: [],

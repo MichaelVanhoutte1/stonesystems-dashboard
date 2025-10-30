@@ -16,6 +16,24 @@ export interface Client {
   new_website_leads: number | null;
   minutes_to_100_usage: number | null;
   minutes_to_first_value: number | null;
+  // Additional nullable fields requested for table; backend will populate later
+  "Company Name"?: string | null;
+  Name?: string | null;
+  Closer?: string | null;
+  "Contact ID"?: string | number | null;
+  "Location ID"?: string | number | null;
+  "Website Link"?: string | null;
+  "Phone Number"?: string | null;
+  "E-mail"?: string | null;
+  "Stripe Customer ID"?: string | null;
+  "Time Enrolled"?: string | null;
+  "Cancellation Reason"?: string | null;
+  "Site Done"?: boolean | string | null;
+  "Delivery Person"?: string | null;
+  "Cancellation Notes"?: string | null;
+  "AI Content Created"?: boolean | string | null;
+  A2P?: boolean | string | null;
+  Referrer?: string | null;
 }
 
 export interface ClientFilters {
@@ -35,6 +53,7 @@ export interface TableColumn<T> {
     | "date"
     | "timestamp";
   className?: string;
+  description?: string;
 }
 
 export interface TableConfig<T> {

@@ -13,6 +13,8 @@ export interface SharedTableColumn<T extends object> {
   description?: string; // brief explanation shown as tooltip
 }
 
+const SORTABLE_TYPES = new Set(["number", "integer", "timestamp", "date"]);
+
 export interface SharedTableConfig<T extends object> {
   title: string;
   columns: SharedTableColumn<T>[];
@@ -70,6 +72,65 @@ export default function DataTable<T extends object>({
 }: DataTableProps<T>) {
   const { title, columns, data } = config;
 
+  const [sortKey, setSortKey] = React.useState<keyof T | null>(null);
+  const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">(
+    "asc"
+  );
+
+  const isSortableColumn = (columnType: string): boolean =>
+    SORTABLE_TYPES.has(columnType);
+
+  const getComparableValue = (value: unknown, type: string): number => {
+    if (value === null || value === undefined) return Number.NaN;
+    if (type === "number" || type === "integer") {
+      if (typeof value === "number") return value;
+      const parsed = Number(value as never);
+      return Number.isFinite(parsed) ? parsed : Number.NaN;
+    }
+    if (type === "timestamp" || type === "date") {
+      const time = new Date(value as string | number | Date).getTime();
+      return Number.isFinite(time) ? time : Number.NaN;
+    }
+    return Number.NaN;
+  };
+
+  const sortedData = React.useMemo(() => {
+    if (!sortKey) return data;
+    const column = columns.find((c) => c.key === sortKey);
+    if (!column || !SORTABLE_TYPES.has(column.type)) return data;
+
+    const copied = [...data];
+    copied.sort((a, b) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const aVal = (a as any)[sortKey as keyof T] as unknown;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const bVal = (b as any)[sortKey as keyof T] as unknown;
+      const aComp = getComparableValue(aVal, column.type);
+      const bComp = getComparableValue(bVal, column.type);
+
+      const aIsNaN = Number.isNaN(aComp);
+      const bIsNaN = Number.isNaN(bComp);
+      if (aIsNaN && bIsNaN) return 0;
+      if (aIsNaN) return 1; // push undefined/invalid to bottom
+      if (bIsNaN) return -1;
+
+      if (aComp < bComp) return sortDirection === "asc" ? -1 : 1;
+      if (aComp > bComp) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+    return copied;
+  }, [data, columns, sortKey, sortDirection]);
+
+  const onHeaderClick = (column: SharedTableColumn<T>) => {
+    if (!isSortableColumn(column.type)) return;
+    if (sortKey === column.key) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(column.key);
+      setSortDirection("asc");
+    }
+  };
+
   const isStickyColumn = (key: keyof T): boolean => stickyColumns.includes(key);
 
   const computeLeft = (colIndex: number): string | number | undefined => {
@@ -101,8 +162,8 @@ export default function DataTable<T extends object>({
     rowIndex?: number
   ) => {
     const base = isHeader
-      ? "px-4 py-3 text-xs font-medium uppercase tracking-wider"
-      : "px-4 py-3 text-sm";
+      ? "px-3 py-2 text-[11px] font-medium uppercase tracking-wide"
+      : "px-3 py-1.5 text-sm";
     const textTone = isHeader ? "text-gray-600" : "text-gray-900";
     const alignment = ["number", "integer", "percentage"].includes(column.type)
       ? "text-right"
@@ -151,8 +212,13 @@ export default function DataTable<T extends object>({
                 return (
                   <th
                     key={String(column.key)}
+                    onClick={() => onHeaderClick(column)}
                     className={`${getCellClassName(column, undefined, true)} ${
                       sticky ? "sticky z-20 bg-gray-50" : ""
+                    } ${
+                      isSortableColumn(column.type)
+                        ? "cursor-pointer select-none"
+                        : ""
                     }`}
                     style={
                       sticky
@@ -171,6 +237,15 @@ export default function DataTable<T extends object>({
                       <span className="font-semibold tracking-wide">
                         {column.label}
                       </span>
+                      {isSortableColumn(column.type) && (
+                        <span className="text-[10px] text-gray-500">
+                          {sortKey === column.key
+                            ? sortDirection === "asc"
+                              ? "▲"
+                              : "▼"
+                            : "↕"}
+                        </span>
+                      )}
                       {column.description && (
                         <Tooltip content={column.description}>
                           <span
@@ -188,7 +263,7 @@ export default function DataTable<T extends object>({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {data.length === 0 ? (
+            {sortedData.length === 0 ? (
               <tr>
                 <td
                   colSpan={columns.length}
@@ -198,7 +273,7 @@ export default function DataTable<T extends object>({
                 </td>
               </tr>
             ) : (
-              data.map((row, rowIndex) => (
+              sortedData.map((row, rowIndex) => (
                 <tr
                   key={rowIndex}
                   className={`divide-x divide-gray-200 hover:bg-gray-100 ${
