@@ -24,7 +24,7 @@ export const clientsTableConfig: TableConfig<Client> = {
       description: "",
     },
     {
-      key: "CSM Name",
+      key: "csm_name",
       label: "CSM Name",
       type: "text",
       description: "",
@@ -194,7 +194,7 @@ export const clientsTableConfig: TableConfig<Client> = {
       "Company Name": 3,
       Name: 2,
       status: 1.5,
-      "CSM Name": 1.25,
+      csm_name: 1.25,
       Referrer: 1,
       "E-mail": 1,
       "Phone Number": 0.75,

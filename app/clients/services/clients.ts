@@ -16,7 +16,7 @@ export const fetchClients = async (
         query = query.eq("status", filters.status);
       }
       if (filters.csmName) {
-        query = query.eq("CSM Name", filters.csmName);
+        query = query.eq("csm_name", filters.csmName);
       }
     }
 
@@ -81,7 +81,7 @@ export const getCSMNameOptions = async (): Promise<string[]> => {
     const uniqueCSMNames = Array.from(
       new Set(
         (data as Client[] | null)
-          ?.map((c) => c["CSM Name"])
+          ?.map((c) => c.csm_name)
           .filter((name): name is string => name !== null)
       )
     ).sort();

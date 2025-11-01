@@ -15,7 +15,8 @@ import {
 } from "./config/table-configs";
 import { CSMStatsResponse, DateRange, LoadingState } from "./types";
 import { processClientDataToCSMStats } from "./helpers/process-csm-stats";
-import { ClientData } from "@/lib/types/client";
+// import { ClientData } from "@/lib/types/client";
+import { Client } from "../clients/types";
 
 export default function CSMStats() {
   const { user, loading } = useAuth();
@@ -58,7 +59,7 @@ export default function CSMStats() {
       // Process the raw client data into CSM stats format
       // Pass dateRange for onboarding metrics filtering
       const processedData = processClientDataToCSMStats(
-        allClients as ClientData[],
+        allClients as Client[],
         currentDateRange
       );
 
