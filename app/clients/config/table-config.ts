@@ -1,45 +1,45 @@
-import { TableConfig, TableColumn } from "../types";
+import { TableConfig } from "../types";
 import { Client } from "../types";
 
 export const clientsTableConfig: TableConfig<Client> = {
   title: "Clients",
   columns: [
-    // Existing columns (unchanged)
+    // Reordered: prioritize identity, status, operations, usage, timelines, IDs/contact
     {
-      key: "client_id",
-      label: "Client ID",
+      key: "Company Name",
+      label: "Company Name",
       type: "text",
-      description: "Unique client identifier",
+      description: "",
+    },
+    {
+      key: "Name",
+      label: "Name",
+      type: "text",
+      description: "",
     },
     {
       key: "status",
       label: "Status",
       type: "text",
-      description: "Current lifecycle status",
-    },
-    {
-      key: "id",
-      label: "ID",
-      type: "integer",
-      description: "Internal numeric ID",
+      description: "",
     },
     {
       key: "CSM Name",
       label: "CSM Name",
       type: "text",
-      description: "Assigned customer success manager",
+      description: "",
+    },
+    {
+      key: "last_meaningful_activity_time",
+      label: "Last Activity Time",
+      type: "timestamp",
+      description: "Most recent meaningful client action",
     },
     {
       key: "total_usage",
       label: "Total Usage",
       type: "integer",
       description: "Cumulative usage count",
-    },
-    {
-      key: "inbound_calls",
-      label: "Inbound Calls",
-      type: "integer",
-      description: "Total inbound calls",
     },
     {
       key: "new_reviews",
@@ -54,10 +54,28 @@ export const clientsTableConfig: TableConfig<Client> = {
       description: "Leads captured on site",
     },
     {
-      key: "created_at",
-      label: "Created At",
+      key: "inbound_calls",
+      label: "Inbound Calls",
+      type: "integer",
+      description: "Total inbound calls",
+    },
+    {
+      key: "minutes_to_first_value",
+      label: "Minutes to First Value",
+      type: "number",
+      description: "Time to first meaningful value",
+    },
+    {
+      key: "minutes_to_100_usage",
+      label: "Minutes to 100 Usage",
+      type: "number",
+      description: "Time to reach first 100 usage units",
+    },
+    {
+      key: "Time Enrolled",
+      label: "Time Enrolled",
       type: "timestamp",
-      description: "Record creation date",
+      description: "Enrollment timestamp",
     },
     {
       key: "started_on",
@@ -66,16 +84,10 @@ export const clientsTableConfig: TableConfig<Client> = {
       description: "Service start date",
     },
     {
-      key: "churned_on",
-      label: "Churned On",
+      key: "created_at",
+      label: "Created At",
       type: "timestamp",
-      description: "Churn date if applicable",
-    },
-    {
-      key: "form_complete_time",
-      label: "Form Complete Time",
-      type: "timestamp",
-      description: "Time when onboarding form was completed",
+      description: "Record creation date",
     },
     {
       key: "onboarding_call_time",
@@ -90,44 +102,13 @@ export const clientsTableConfig: TableConfig<Client> = {
       description: "Scheduled launch call time",
     },
     {
-      key: "last_meaningful_activity_time",
-      label: "Last Activity Time",
+      key: "churned_on",
+      label: "Churned On",
       type: "timestamp",
-      description: "Most recent meaningful client action",
+      description: "Churn date if applicable",
     },
     {
-      key: "minutes_to_100_usage",
-      label: "Minutes to 100 Usage",
-      type: "number",
-      description: "Time to reach first 100 usage units",
-    },
-    {
-      key: "minutes_to_first_value",
-      label: "Minutes to First Value",
-      type: "number",
-      description: "Time to first meaningful value",
-    },
-    // Additional requested columns; will show N/A until backend populates
-    {
-      key: "Company Name",
-      label: "Company Name",
-      type: "text",
-      description: "Business name",
-    },
-    {
-      key: "Name",
-      label: "Name",
-      type: "text",
-      description: "Primary contact name",
-    },
-    {
-      key: "Closer",
-      label: "Closer",
-      type: "text",
-      description: "Sales closer",
-    },
-    {
-      key: "Contact ID",
+      key: "client_id",
       label: "Contact ID",
       type: "text",
       description: "CRM contact identifier",
@@ -163,18 +144,6 @@ export const clientsTableConfig: TableConfig<Client> = {
       description: "Stripe customer reference",
     },
     {
-      key: "Time Enrolled",
-      label: "Time Enrolled",
-      type: "timestamp",
-      description: "Enrollment timestamp",
-    },
-    {
-      key: "Cancellation Reason",
-      label: "Cancellation Reason",
-      type: "text",
-      description: "Stated reason for cancel",
-    },
-    {
       key: "Site Done",
       label: "Site Done",
       type: "text",
@@ -187,10 +156,10 @@ export const clientsTableConfig: TableConfig<Client> = {
       description: "Assigned delivery owner",
     },
     {
-      key: "Cancellation Notes",
-      label: "Cancellation Notes",
+      key: "A2P",
+      label: "A2P",
       type: "text",
-      description: "Additional cancellation notes",
+      description: "A2P registration status",
     },
     {
       key: "AI Content Created",
@@ -199,18 +168,37 @@ export const clientsTableConfig: TableConfig<Client> = {
       description: "AI content status",
     },
     {
-      key: "A2P",
-      label: "A2P",
-      type: "text",
-      description: "A2P registration status",
-    },
-    {
       key: "Referrer",
       label: "Referrer",
       type: "text",
       description: "Lead source referrer",
     },
+    {
+      key: "Cancellation Reason",
+      label: "Cancellation Reason",
+      type: "text",
+      description: "Stated reason for cancel",
+    },
+    {
+      key: "Cancellation Notes",
+      label: "Cancellation Notes",
+      type: "text",
+      description: "Additional cancellation notes",
+    },
   ],
   data: [],
   showTotals: false,
+  search: {
+    // Default weights for common string columns; tweak as desired
+    weights: {
+      "Company Name": 3,
+      Name: 2,
+      status: 1.5,
+      "CSM Name": 1.25,
+      Referrer: 1,
+      "E-mail": 1,
+      "Phone Number": 0.75,
+      "Website Link": 0.5,
+    },
+  },
 };

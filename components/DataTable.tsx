@@ -19,6 +19,11 @@ export interface SharedTableConfig<T extends object> {
   title: string;
   columns: SharedTableColumn<T>[];
   data: T[];
+  search?: {
+    weights?: Partial<Record<keyof T, number>>;
+    scorer?: (row: T, term: string) => number;
+    term?: string; // provided by consumer; when empty/undefined, search is skipped
+  };
 }
 
 interface DataTableProps<T extends object> {
@@ -29,6 +34,8 @@ interface DataTableProps<T extends object> {
   minTableWidth?: string | number;
   stickyColumns?: (keyof T)[]; // e.g., ["client_id", "status"]
   stickyColumnWidths?: (string | number)[]; // e.g., ["200px", "200px"]
+  // Constrain vertical size to make body scrollable while headers stay sticky
+  maxBodyHeight?: string | number;
 }
 
 const formatTimestamp = (value: unknown): string => {
@@ -52,7 +59,7 @@ const getDisplayValue = (value: unknown, type: string): string => {
     return formatTimestamp(value);
   }
   if (type === "number") {
-    return typeof value === "number" ? value.toFixed(2) : String(value);
+    return typeof value === "number" ? value.toFixed(1) : String(value);
   }
   if (type === "integer") {
     return typeof value === "number"
@@ -69,6 +76,7 @@ export default function DataTable<T extends object>({
   minTableWidth,
   stickyColumns = [],
   stickyColumnWidths = [],
+  maxBodyHeight,
 }: DataTableProps<T>) {
   const { title, columns, data } = config;
 
@@ -94,12 +102,70 @@ export default function DataTable<T extends object>({
     return Number.NaN;
   };
 
-  const sortedData = React.useMemo(() => {
-    if (!sortKey) return data;
-    const column = columns.find((c) => c.key === sortKey);
-    if (!column || !SORTABLE_TYPES.has(column.type)) return data;
+  // Default weighted search scorer using column metadata and optional weights
+  const defaultScorer = React.useCallback(
+    (row: T, rawTerm: string): number => {
+      if (!rawTerm) return 0;
+      const term = rawTerm.toLowerCase().trim();
+      if (!term) return 0;
 
-    const copied = [...data];
+      const weights =
+        config.search?.weights || ({} as Partial<Record<keyof T, number>>);
+      let score = 0;
+      for (const col of columns) {
+        if (col.type !== "text") continue;
+        const key = col.key;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const value = (row as any)[key as keyof T] as unknown;
+        if (value === null || value === undefined) continue;
+        const valueStr = String(value).toLowerCase();
+        if (!valueStr) continue;
+        if (valueStr.includes(term)) {
+          const weight = (weights[key] as number | undefined) ?? 1;
+          // small boost for prefix and exact match
+          const prefixBoost = valueStr.startsWith(term) ? 0.5 : 0;
+          const exactBoost = valueStr === term ? 1 : 0;
+          score += weight * (1 + prefixBoost + exactBoost);
+        }
+      }
+      return score;
+    },
+    [columns, config.search?.weights]
+  );
+
+  const applySearch = React.useCallback(
+    (rows: T[]): { rows: T[]; scores: number[] } => {
+      const term = config.search?.term;
+      if (!term) return { rows, scores: [] };
+
+      const scorer = config.search?.scorer || defaultScorer;
+      const scored = rows
+        .map((r) => ({ r, s: scorer(r, term) }))
+        .filter(({ s }) => s > 0);
+
+      // If no sort key is active, sort by score desc by default
+      if (!sortKey) {
+        scored.sort((a, b) => b.s - a.s);
+      }
+
+      return {
+        rows: scored.map(({ r }) => r),
+        scores: scored.map(({ s }) => s),
+      };
+    },
+    [config.search?.term, config.search?.scorer, defaultScorer, sortKey]
+  );
+
+  const searchedData = React.useMemo(() => {
+    return applySearch(data).rows;
+  }, [data, applySearch]);
+
+  const sortedData = React.useMemo(() => {
+    if (!sortKey) return searchedData;
+    const column = columns.find((c) => c.key === sortKey);
+    if (!column || !SORTABLE_TYPES.has(column.type)) return searchedData;
+
+    const copied = [...searchedData];
     copied.sort((a, b) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const aVal = (a as any)[sortKey as keyof T] as unknown;
@@ -119,7 +185,7 @@ export default function DataTable<T extends object>({
       return 0;
     });
     return copied;
-  }, [data, columns, sortKey, sortDirection]);
+  }, [searchedData, columns, sortKey, sortDirection]);
 
   const onHeaderClick = (column: SharedTableColumn<T>) => {
     if (!isSortableColumn(column.type)) return;
@@ -155,6 +221,25 @@ export default function DataTable<T extends object>({
     return undefined;
   };
 
+  // Returns configured width for a sticky column at given colIndex, if any
+  const computeStickyWidth = (
+    colIndex: number
+  ): string | number | undefined => {
+    const stickyOnly = columns.filter((c) => isStickyColumn(c.key));
+    const stickyIndex = stickyOnly.findIndex(
+      (c) => c.key === columns[colIndex].key
+    );
+    if (stickyIndex === -1) return undefined;
+    const configured = stickyColumnWidths[stickyIndex];
+    return configured;
+  };
+
+  const getMinWidthForColumn = (
+    column: SharedTableColumn<T>
+  ): number | undefined => {
+    return column.type === "duration" ? 110 : undefined;
+  };
+
   const getCellClassName = (
     column: SharedTableColumn<T>,
     value: unknown,
@@ -184,11 +269,23 @@ export default function DataTable<T extends object>({
       <div className="px-6 py-4 border-b border-gray-200">
         <h3 className="text-lg font-semibold text-gray-900">
           {title}
-          {showCountInTitle ? ` (${data.length})` : ""}
+          {showCountInTitle ? ` (${sortedData.length})` : ""}
         </h3>
       </div>
 
-      <div className="overflow-x-auto">
+      <div
+        className="overflow-auto"
+        style={
+          maxBodyHeight
+            ? {
+                maxHeight:
+                  typeof maxBodyHeight === "number"
+                    ? `${maxBodyHeight}px`
+                    : maxBodyHeight,
+              }
+            : undefined
+        }
+      >
         <table
           className="min-w-full divide-y divide-gray-200"
           style={
@@ -209,54 +306,57 @@ export default function DataTable<T extends object>({
                 const left = sticky ? computeLeft(index) : undefined;
                 const hasPrevSticky =
                   index > 0 && isStickyColumn(columns[index - 1].key);
+                const stickyWidth = computeStickyWidth(index);
+                const minWidth = getMinWidthForColumn(column);
+                const headerStyle: React.CSSProperties | undefined = sticky
+                  ? {
+                      left,
+                      width: stickyWidth,
+                      minWidth: stickyWidth ?? minWidth,
+                      backgroundColor: "#f9fafb",
+                      boxShadow:
+                        hasPrevSticky || index > 0
+                          ? "2px 0 5px rgba(0, 0, 0, 0.1)"
+                          : undefined,
+                    }
+                  : minWidth
+                  ? { minWidth }
+                  : undefined;
+
                 return (
                   <th
                     key={String(column.key)}
                     onClick={() => onHeaderClick(column)}
-                    className={`${getCellClassName(column, undefined, true)} ${
-                      sticky ? "sticky z-20 bg-gray-50" : ""
-                    } ${
+                    className={`relative ${getCellClassName(
+                      column,
+                      undefined,
+                      true
+                    )} ${sticky ? "sticky z-20 bg-gray-50" : ""} ${
                       isSortableColumn(column.type)
                         ? "cursor-pointer select-none"
                         : ""
                     }`}
-                    style={
-                      sticky
-                        ? {
-                            left,
-                            backgroundColor: "#f9fafb",
-                            boxShadow:
-                              hasPrevSticky || index > 0
-                                ? "2px 0 5px rgba(0, 0, 0, 0.1)"
-                                : undefined,
-                          }
-                        : undefined
-                    }
+                    style={headerStyle}
                   >
-                    <div className="flex items-center gap-1.5 text-gray-700">
-                      <span className="font-semibold tracking-wide">
-                        {column.label}
-                      </span>
-                      {isSortableColumn(column.type) && (
-                        <span className="text-[10px] text-gray-500">
-                          {sortKey === column.key
-                            ? sortDirection === "asc"
-                              ? "▲"
-                              : "▼"
-                            : "↕"}
+                    {column.description && (
+                      <div className="absolute top-0 right-0 w-0 h-0 border-t-[10px] border-l-[10px] border-t-black border-l-transparent"></div>
+                    )}
+                    <Tooltip content={column.description || ""}>
+                      <div className="flex items-center gap-1.5 text-gray-700">
+                        <span className="font-semibold tracking-wide">
+                          {column.label}
                         </span>
-                      )}
-                      {column.description && (
-                        <Tooltip content={column.description}>
-                          <span
-                            aria-label="Help"
-                            className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 text-gray-600 text-[10px] hover:bg-gray-300"
-                          >
-                            i
+                        {isSortableColumn(column.type) && (
+                          <span className="text-[10px] text-gray-500">
+                            {sortKey === column.key
+                              ? sortDirection === "asc"
+                                ? "▲"
+                                : "▼"
+                              : "↕"}
                           </span>
-                        </Tooltip>
-                      )}
-                    </div>
+                        )}
+                      </div>
+                    </Tooltip>
                   </th>
                 );
               })}
@@ -292,6 +392,23 @@ export default function DataTable<T extends object>({
                       colIndex > 0 && isStickyColumn(columns[colIndex - 1].key);
                     const bgColor = rowIndex % 2 === 0 ? "#ffffff" : "#f9fafb";
 
+                    const stickyWidth = computeStickyWidth(colIndex);
+                    const minWidth = getMinWidthForColumn(column);
+                    const cellStyle: React.CSSProperties | undefined = sticky
+                      ? {
+                          left,
+                          width: stickyWidth,
+                          minWidth: stickyWidth ?? minWidth,
+                          backgroundColor: bgColor,
+                          boxShadow:
+                            hasPrevSticky || colIndex > 0
+                              ? "2px 0 5px rgba(0, 0, 0, 0.1)"
+                              : undefined,
+                        }
+                      : minWidth
+                      ? { minWidth, backgroundColor: bgColor }
+                      : undefined;
+
                     return (
                       <td
                         key={`${rowIndex}-${String(column.key)}`}
@@ -301,18 +418,7 @@ export default function DataTable<T extends object>({
                           false,
                           rowIndex
                         )} ${sticky ? "sticky z-10" : ""}`}
-                        style={
-                          sticky
-                            ? {
-                                left,
-                                backgroundColor: bgColor,
-                                boxShadow:
-                                  hasPrevSticky || colIndex > 0
-                                    ? "2px 0 5px rgba(0, 0, 0, 0.1)"
-                                    : undefined,
-                              }
-                            : undefined
-                        }
+                        style={cellStyle}
                       >
                         {displayValue}
                       </td>

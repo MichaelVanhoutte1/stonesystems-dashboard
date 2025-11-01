@@ -81,6 +81,7 @@ export interface TableColumn<T> {
   type: "number" | "integer" | "percentage" | "duration" | "text" | "todo";
   isCalculated?: boolean;
   className?: string;
+  description?: string;
 }
 
 // Table Configuration

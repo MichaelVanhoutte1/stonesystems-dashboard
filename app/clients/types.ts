@@ -6,7 +6,7 @@ export interface Client {
   onboarding_call_time: string | null;
   launch_call_time: string | null;
   last_meaningful_activity_time: string | null;
-  "CSM Name": string | null;
+  csm_name: string | null;
   status: string | null;
   started_on: string | null;
   churned_on: string | null;
@@ -39,6 +39,7 @@ export interface Client {
 export interface ClientFilters {
   status?: string;
   csmName?: string;
+  searchTerm?: string;
 }
 
 export interface TableColumn<T> {
@@ -61,4 +62,11 @@ export interface TableConfig<T> {
   columns: TableColumn<T>[];
   data: T[];
   showTotals?: boolean;
+  search?: {
+    // weight per column key; higher means more important in search scoring
+    weights?: Partial<Record<keyof T, number>>;
+    // optional custom scorer: return a non-negative score; 0 means not a match
+    // term will be provided normalized according to case sensitivity choice in consumer
+    scorer?: (row: T, term: string) => number;
+  };
 }

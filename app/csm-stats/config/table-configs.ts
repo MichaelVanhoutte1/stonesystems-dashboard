@@ -14,7 +14,7 @@ export const clientOnboardingConfig: TableConfig<ClientOnboardingMetrics> = {
       key: "csm",
       label: "CSM",
       type: "text",
-      description: "Customer success manager",
+      description: "",
     },
     {
       key: "newClients",
@@ -36,7 +36,7 @@ export const clientOnboardingConfig: TableConfig<ClientOnboardingMetrics> = {
     },
     {
       key: "formCompleteTimeAvg",
-      label: "Form Complete Time (avg)",
+      label: "Avg Form Complete Time",
       type: "todo",
       description: "Average time to complete form",
     },
@@ -54,7 +54,7 @@ export const clientOnboardingConfig: TableConfig<ClientOnboardingMetrics> = {
     },
     {
       key: "timeToOnboardCallAvg",
-      label: "Time To Onboard Call (avg)",
+      label: "Avg Time To Onboard Call",
       type: "todo",
       description: "Avg time to onboarding call",
     },
@@ -72,7 +72,7 @@ export const clientOnboardingConfig: TableConfig<ClientOnboardingMetrics> = {
     },
     {
       key: "timeToLaunchCallAvg",
-      label: "Time To Launch Call (avg)",
+      label: "Avg Time To Launch Call",
       type: "todo",
       description: "Avg time to launch call",
     },
@@ -113,7 +113,7 @@ export const customerRetentionConfig: TableConfig<CustomerRetentionMetrics> = {
       key: "csm",
       label: "CSM",
       type: "text",
-      description: "Customer success manager",
+      description: "",
     },
     {
       key: "clientsManaging",

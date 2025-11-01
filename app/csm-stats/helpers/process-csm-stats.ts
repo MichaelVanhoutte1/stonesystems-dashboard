@@ -1,10 +1,10 @@
+import { Client } from "@/app/clients/types";
 import {
   CSMStatsResponse,
   ClientOnboardingMetrics,
   CustomerRetentionMetrics,
   DateRange,
 } from "../types";
-import { ClientData } from "@/lib/types/client";
 
 /**
  * Process raw client data into CSM stats format
@@ -12,7 +12,7 @@ import { ClientData } from "@/lib/types/client";
  * @param dateRange - Date range for filtering onboarding metrics only
  */
 export const processClientDataToCSMStats = (
-  clients: ClientData[],
+  clients: Client[],
   dateRange: DateRange
 ): CSMStatsResponse => {
   // Hardcoded CSM names as specified
@@ -31,7 +31,6 @@ export const processClientDataToCSMStats = (
       startedDate >= dateRange.startDate && startedDate <= dateRange.endDate
     );
   });
-
   // Calculate client onboarding metrics from date-filtered data
   const clientOnboarding = csmNames.map((csmName) =>
     calculateClientOnboardingFromData(onboardingClients, csmName)
@@ -338,10 +337,10 @@ const calculateWeightedAverageDuration = (
  * Calculate client onboarding metrics from raw client data
  */
 const calculateClientOnboardingFromData = (
-  clients: ClientData[],
+  clients: Client[],
   csmName: string
 ) => {
-  const csmClients = clients.filter((client) => client["CSM Name"] === csmName);
+  const csmClients = clients.filter((client) => client.csm_name === csmName);
 
   const newClients = csmClients.length;
   const formsCompleted = csmClients.filter(
@@ -378,7 +377,6 @@ const calculateClientOnboardingFromData = (
     .map((client) =>
       calculateTimeDifference(client.started_on, client.onboarding_call_time!)
     );
-  console.log({ timeToOnboardCalls });
   const timeToOnboardCallAvg = calculateAverageDuration(timeToOnboardCalls);
 
   // Calculate launch call metrics
@@ -509,11 +507,11 @@ const parseDurationToMinutes = (duration: string): number => {
  * Calculate customer retention metrics from raw client data
  */
 const calculateCustomerRetentionFromData = (
-  clients: ClientData[],
+  clients: Client[],
   csmName: string,
   dateRange: DateRange
 ): CustomerRetentionMetrics => {
-  const csmClients = clients.filter((client) => client["CSM Name"] === csmName);
+  const csmClients = clients.filter((client) => client.csm_name === csmName);
 
   // Basic counts
   const clientsManaging = csmClients.filter(

@@ -124,11 +124,16 @@ export default function Clients() {
               config={{
                 ...clientsTableConfig,
                 data: clients,
+                search: {
+                  ...(clientsTableConfig.search ?? {}),
+                  term: filters.searchTerm,
+                },
               }}
               showCountInTitle
               minTableWidth={1600}
-              stickyColumns={["client_id", "status"]}
-              stickyColumnWidths={["200px", "200px"]}
+              stickyColumns={["Company Name", "Name"]}
+              stickyColumnWidths={["150px", "150px"]}
+              maxBodyHeight={"calc(100vh - 300px)"}
             />
           )}
         </div>
