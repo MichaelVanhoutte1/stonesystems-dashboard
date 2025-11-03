@@ -8,7 +8,10 @@ export const fetchClients = async (
   filters?: ClientFilters
 ): Promise<Client[]> => {
   try {
-    let query = supabase.from("clients").select("*");
+    let query = supabase
+      .from("clients")
+      .select("*")
+      .not("started_on", "is", null);
 
     // Apply filters if provided
     if (filters) {

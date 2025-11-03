@@ -8,7 +8,10 @@ import { Client } from "../../clients/types";
 export const fetchCSMStats = async (): Promise<Client[]> => {
   try {
     // Fetch all clients data (no date filter)
-    const { data: clients, error } = await supabase.from("clients").select("*");
+    const { data: clients, error } = await supabase
+      .from("clients")
+      .select("*")
+      .not("started_on", "is", null);
 
     if (error) {
       throw new Error(`Failed to fetch clients: ${error.message}`);

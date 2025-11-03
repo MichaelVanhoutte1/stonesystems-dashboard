@@ -23,14 +23,17 @@ export const processClientDataToCSMStats = (
     "Nicolas Vasquez",
   ];
 
+  console.log({ dateRange });
   // Filter clients by date range for onboarding metrics
   const onboardingClients = clients.filter((client) => {
     if (!client.started_on) return false;
-    const startedDate = client.started_on;
+    const startedDate = new Date(client.started_on);
     return (
-      startedDate >= dateRange.startDate && startedDate <= dateRange.endDate
+      startedDate >= new Date(dateRange.startDate) &&
+      startedDate <= new Date(dateRange.endDate)
     );
   });
+  console.log({ clients });
   // Calculate client onboarding metrics from date-filtered data
   const clientOnboarding = csmNames.map((csmName) =>
     calculateClientOnboardingFromData(onboardingClients, csmName)
