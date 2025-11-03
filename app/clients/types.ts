@@ -30,8 +30,8 @@ export interface Client {
   stripe_customer_id?: string | null;
   // "Time Enrolled"?: string | null;
   cancellation_reason?: string | null;
-  // "Site Done"?: boolean | string | null;
-  // "Delivery Person"?: string | null;
+  site_done_at: string | null;
+  delivery_person: string | null;
   cancellation_notes?: string | null;
   ai_content_created?: boolean | string | null;
   a2p_provider?: boolean | string | null;

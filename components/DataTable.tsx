@@ -38,6 +38,8 @@ interface DataTableProps<T extends object> {
   stickyColumnWidths?: (string | number)[]; // e.g., ["200px", "200px"]
   // Constrain vertical size to make body scrollable while headers stay sticky
   maxBodyHeight?: string | number;
+  // Keep the last row fixed in position when sorting (useful for Totals rows)
+  pinLastRow?: boolean;
 }
 
 const formatTimestamp = (value: unknown): string => {
@@ -79,6 +81,7 @@ export default function DataTable<T extends object>({
   stickyColumns = [],
   stickyColumnWidths = [],
   maxBodyHeight,
+  pinLastRow = false,
 }: DataTableProps<T>) {
   const { title, columns, data } = config;
 
@@ -167,7 +170,15 @@ export default function DataTable<T extends object>({
     const column = columns.find((c) => c.key === sortKey);
     if (!column || !SORTABLE_TYPES.has(column.type)) return searchedData;
 
-    const copied = [...searchedData];
+    // If we need to pin the last row (e.g., Totals), separate it out before sorting
+    let pinned: T | undefined;
+    let sortable: T[] = [...searchedData];
+    if (pinLastRow && sortable.length > 0) {
+      pinned = sortable[sortable.length - 1];
+      sortable = sortable.slice(0, -1);
+    }
+
+    const copied = [...sortable];
     copied.sort((a, b) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const aVal = (a as any)[sortKey as keyof T] as unknown;
@@ -186,8 +197,8 @@ export default function DataTable<T extends object>({
       if (aComp > bComp) return sortDirection === "asc" ? 1 : -1;
       return 0;
     });
-    return copied;
-  }, [searchedData, columns, sortKey, sortDirection]);
+    return pinned !== undefined ? [...copied, pinned] : copied;
+  }, [searchedData, columns, sortKey, sortDirection, pinLastRow]);
 
   const onHeaderClick = (column: SharedTableColumn<T>) => {
     if (!isSortableColumn(column.type)) return;

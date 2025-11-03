@@ -74,10 +74,10 @@ export default function Navbar() {
     },
     {
       name: "VA Stats",
-      href: "#",
-      disabled: true,
+      href: "/va-stats",
+      disabled: false,
       icon: BarChart3,
-      badge: "Soon",
+      badge: null,
     },
     {
       name: "Clients",

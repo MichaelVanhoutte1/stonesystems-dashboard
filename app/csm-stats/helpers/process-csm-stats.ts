@@ -363,6 +363,7 @@ const calculateClientOnboardingFromData = (
     .map((client) =>
       calculateTimeDifference(client.started_on, client.form_complete_time!)
     );
+  console.log({ formCompleteTimes });
   const formCompleteTimeAvg = calculateAverageDuration(formCompleteTimes);
 
   // Calculate onboarding call metrics
@@ -454,13 +455,13 @@ const calculateTimeDifference = (
   startTime: string | null,
   endTime: string | null
 ): string => {
-  if (!startTime || !endTime) return "0d 0h 0m";
+  if (!startTime || !endTime) return "0";
 
   const start = new Date(startTime);
   const end = new Date(endTime);
   const diffMs = end.getTime() - start.getTime();
 
-  if (diffMs < 0) return "0d 0h 0m";
+  if (diffMs < 0) return "0";
 
   const totalMinutes = Math.floor(diffMs / (1000 * 60));
   return totalMinutes.toString();
@@ -532,12 +533,16 @@ const calculateCustomerRetentionFromData = (
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
   const inactiveClients = csmClients.filter((client) => {
-    if (client.status === "Cancelled" || client.status === "Churned")
-      return false;
+    if (client.status !== "Active") return false;
     if (!client.last_meaningful_activity_time) return true;
     const lastActivity = new Date(client.last_meaningful_activity_time);
     return lastActivity > thirtyDaysAgo;
   }).length;
+
+  console.log({
+    inactiveClients,
+    clientsManaging,
+  });
 
   const inactiveClientsPercentage =
     clientsManaging > 0
