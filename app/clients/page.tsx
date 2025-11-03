@@ -131,7 +131,7 @@ export default function Clients() {
               }}
               showCountInTitle
               minTableWidth={1600}
-              stickyColumns={["Company Name", "Name"]}
+              stickyColumns={["company_name", "name"]}
               stickyColumnWidths={["150px", "150px"]}
               maxBodyHeight={"calc(100vh - 300px)"}
             />

@@ -17,23 +17,23 @@ export interface Client {
   minutes_to_100_usage: number | null;
   minutes_to_first_value: number | null;
   // Additional nullable fields requested for table; backend will populate later
-  "Company Name"?: string | null;
-  Name?: string | null;
-  Closer?: string | null;
-  "Contact ID"?: string | number | null;
-  "Location ID"?: string | number | null;
-  "Website Link"?: string | null;
-  "Phone Number"?: string | null;
-  "E-mail"?: string | null;
-  "Stripe Customer ID"?: string | null;
-  "Time Enrolled"?: string | null;
-  "Cancellation Reason"?: string | null;
-  "Site Done"?: boolean | string | null;
-  "Delivery Person"?: string | null;
-  "Cancellation Notes"?: string | null;
-  "AI Content Created"?: boolean | string | null;
-  A2P?: boolean | string | null;
-  Referrer?: string | null;
+  company_name?: string | null;
+  name?: string | null;
+  closer?: string | null;
+  // "Contact ID"?: string | number | null;
+  location_id?: string | number | null;
+  website?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  stripe_customer_id?: string | null;
+  // "Time Enrolled"?: string | null;
+  cancellation_reason?: string | null;
+  // "Site Done"?: boolean | string | null;
+  // "Delivery Person"?: string | null;
+  cancellation_notes?: string | null;
+  ai_content_created?: boolean | string | null;
+  a2p_provider?: boolean | string | null;
+  referrer?: string | null;
 }
 
 export interface ClientFilters {
