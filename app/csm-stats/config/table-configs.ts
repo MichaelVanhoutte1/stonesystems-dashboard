@@ -91,7 +91,7 @@ export const clientOnboardingConfig: TableConfig<ClientOnboardingMetrics> = {
     {
       key: "activatedUnder30Days",
       label: "Activated <30d",
-      type: "number",
+      type: "integer",
       description: "Clients activated <30 days",
     },
     {
@@ -184,7 +184,7 @@ export const customerRetentionConfig: TableConfig<CustomerRetentionMetrics> = {
     {
       key: "churned",
       label: "# Churned",
-      type: "number",
+      type: "integer",
       description: "Clients churned in period",
     },
     {

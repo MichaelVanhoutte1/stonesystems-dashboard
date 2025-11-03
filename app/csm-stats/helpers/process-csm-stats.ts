@@ -519,10 +519,9 @@ const calculateCustomerRetentionFromData = (
   ).length;
 
   const churned = csmClients.filter(
-    (client) =>
-      client.churned_on !== null &&
-      client.churned_on >= dateRange.startDate &&
-      client.churned_on <= dateRange.endDate
+    (client) => client.churned_on !== null
+    // client.churned_on >= dateRange.startDate &&
+    // client.churned_on <= dateRange.endDate
   ).length;
 
   // Calculate inactive clients (no meaningful activity in last 30 days)
@@ -530,6 +529,8 @@ const calculateCustomerRetentionFromData = (
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
   const inactiveClients = csmClients.filter((client) => {
+    if (client.status === "Cancelled" || client.status === "Churned")
+      return false;
     if (!client.last_meaningful_activity_time) return true;
     const lastActivity = new Date(client.last_meaningful_activity_time);
     return lastActivity > thirtyDaysAgo;

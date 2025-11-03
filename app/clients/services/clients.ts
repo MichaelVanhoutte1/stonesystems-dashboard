@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { Client, ClientFilters } from "../types";
+import { Client, ClientFilters, ClientStatus } from "../types";
 
 /**
  * Fetch all clients with optional filters
@@ -42,7 +42,7 @@ export const fetchClients = async (
 /**
  * Get unique status values from clients
  */
-export const getStatusOptions = async (): Promise<string[]> => {
+export const getStatusOptions = async (): Promise<ClientStatus[]> => {
   try {
     const { data, error } = await supabase.from("clients").select("*");
 
@@ -55,11 +55,11 @@ export const getStatusOptions = async (): Promise<string[]> => {
       new Set(
         (data as Client[] | null)
           ?.map((c) => c.status)
-          .filter((status): status is string => status !== null)
+          .filter((status): status is ClientStatus | null => status !== null)
       )
     ).sort();
 
-    return uniqueStatuses;
+    return uniqueStatuses as ClientStatus[];
   } catch (error) {
     console.error("Error fetching status options:", error);
     return [];
