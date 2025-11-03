@@ -1,3 +1,5 @@
+export type ClientStatus = "Active" | "Cancelled" | "CC Declined" | "Churned";
+
 export interface Client {
   id: number;
   created_at: string | null;
@@ -7,7 +9,7 @@ export interface Client {
   launch_call_time: string | null;
   last_meaningful_activity_time: string | null;
   csm_name: string | null;
-  status: string | null;
+  status: ClientStatus | null;
   started_on: string | null;
   churned_on: string | null;
   total_usage: number | null;
@@ -55,6 +57,8 @@ export interface TableColumn<T> {
     | "timestamp";
   className?: string;
   description?: string;
+  // Optional custom cell renderer for advanced display
+  render?: (value: unknown, row: T) => React.ReactNode;
 }
 
 export interface TableConfig<T> {

@@ -11,6 +11,8 @@ export interface SharedTableColumn<T extends object> {
   type: string; // accepts unions like "number" | "integer" | "percentage" | "timestamp" | "text" | ...
   className?: string;
   description?: string; // brief explanation shown as tooltip
+  // Optional custom renderer to override default cell content
+  render?: (value: unknown, row: T) => React.ReactNode;
 }
 
 const SORTABLE_TYPES = new Set(["number", "integer", "timestamp", "date"]);
@@ -385,7 +387,10 @@ export default function DataTable<T extends object>({
                     const value = (row as any)[
                       column.key as keyof T
                     ] as unknown;
-                    const displayValue = getDisplayValue(value, column.type);
+                    const displayValue =
+                      typeof column.render === "function"
+                        ? column.render(value, row)
+                        : getDisplayValue(value, column.type);
                     const sticky = isStickyColumn(column.key);
                     const left = sticky ? computeLeft(colIndex) : undefined;
                     const hasPrevSticky =

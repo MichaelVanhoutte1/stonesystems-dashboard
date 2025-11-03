@@ -1,5 +1,6 @@
 import { TableConfig } from "../types";
-import { Client } from "../types";
+import { Client, ClientStatus } from "../types";
+import { Badge } from "@/components/ui/badge";
 
 export const clientsTableConfig: TableConfig<Client> = {
   title: "Clients",
@@ -22,6 +23,23 @@ export const clientsTableConfig: TableConfig<Client> = {
       label: "Status",
       type: "text",
       description: "",
+      render: (value) => {
+        const status = (value as ClientStatus) || null;
+        const getVariant = () => {
+          switch (status) {
+            case "Active":
+              return "default" as const;
+            case "Cancelled":
+            case "Churned":
+              return "destructive" as const;
+            case "CC Declined":
+              return "secondary" as const;
+            default:
+              return "outline" as const;
+          }
+        };
+        return <Badge variant={getVariant()}>{status ?? "N/A"}</Badge>;
+      },
     },
     {
       key: "csm_name",
