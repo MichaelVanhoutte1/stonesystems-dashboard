@@ -49,7 +49,7 @@ export const clientOnboardingConfig: TableConfig<ClientOnboardingMetrics> = {
     {
       key: "onboardCallShowPercentage",
       label: "Onboard Call Show %",
-      type: "todo",
+      type: "percentage",
       description: "% onboarding call shows",
     },
     {
@@ -67,7 +67,7 @@ export const clientOnboardingConfig: TableConfig<ClientOnboardingMetrics> = {
     {
       key: "launchCallShowPercentage",
       label: "Launch Call Show %",
-      type: "todo",
+      type: "percentage",
       description: "% launch call shows",
     },
     {

@@ -60,10 +60,10 @@ export default function Navbar() {
   const navigationItems = [
     {
       name: "Sales Stats",
-      href: "#",
-      disabled: true,
+      href: "/sales-stats",
+      disabled: false,
       icon: BarChart3,
-      badge: "Soon",
+      badge: null,
     },
     {
       name: "CSM Stats",

@@ -70,6 +70,19 @@ const getDisplayValue = (value: unknown, type: string): string => {
       ? Math.round(value).toString()
       : String(value);
   }
+  if (type === "percentage") {
+    if (typeof value === "number" && Number.isFinite(value)) {
+      const percent = value.toFixed(1);
+      return `${percent}%`;
+    }
+    // Fallback if value comes in already as string/unknown
+    const numeric = Number(value as never);
+    if (Number.isFinite(numeric)) {
+      const percent = numeric.toFixed(1);
+      return `${percent}%`;
+    }
+    return String(value);
+  }
   return String(value);
 };
 
