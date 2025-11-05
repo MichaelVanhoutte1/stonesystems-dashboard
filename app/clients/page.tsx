@@ -10,11 +10,26 @@ import { clientsTableConfig } from "./config/table-config";
 import DataTable from "@/components/DataTable";
 import ClientFiltersPanel from "./components/ClientFilters";
 
+const formatElapsed = (startIso: string | null): string | null => {
+  if (!startIso) return null;
+  const start = new Date(startIso).getTime();
+  if (!Number.isFinite(start)) return null;
+  const now = Date.now();
+  const diffMs = Math.max(0, now - start);
+  const minutes = Math.floor(diffMs / (60 * 1000));
+  const days = Math.floor(minutes / (60 * 24));
+  const hours = Math.floor((minutes - days * 24 * 60) / 60);
+  const mins = minutes - days * 24 * 60 - hours * 60;
+  return `${days}d ${hours}h ${mins}m`;
+};
+
+type ClientWithElapsed = Client & { elapsed_since_start: string | null };
+
 export default function Clients() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
-  const [clients, setClients] = useState<Client[]>([]);
+  const [clients, setClients] = useState<ClientWithElapsed[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<ClientFilters>({});
@@ -31,7 +46,11 @@ export default function Clients() {
 
     try {
       const data = await fetchClients(currentFilters);
-      setClients(data);
+      const augmented: ClientWithElapsed[] = data.map((c) => ({
+        ...c,
+        elapsed_since_start: formatElapsed(c.started_on),
+      }));
+      setClients(augmented);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load clients");
     } finally {

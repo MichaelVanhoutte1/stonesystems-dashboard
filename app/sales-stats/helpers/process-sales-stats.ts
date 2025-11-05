@@ -111,7 +111,7 @@ const calculateSetterMetrics = (
     if (!apt.setter || !apt.setter.includes(setterName)) return false;
     if (apt.status !== "showed") return false;
     const aptDate = new Date(apt.appointment_date);
-    if (aptDate < startDate || aptDate >= endDate) return false;
+    if (aptDate < startDate || aptDate > endDate) return false;
     if (apt.closer === "Melo Moore") return false;
     return true;
   }).length;

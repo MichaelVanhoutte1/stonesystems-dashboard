@@ -539,11 +539,6 @@ const calculateCustomerRetentionFromData = (
     return lastActivity > thirtyDaysAgo;
   }).length;
 
-  console.log({
-    inactiveClients,
-    clientsManaging,
-  });
-
   const inactiveClientsPercentage =
     clientsManaging > 0
       ? Math.round((inactiveClients / clientsManaging) * 100 * 100) / 100
@@ -572,6 +567,7 @@ const calculateCustomerRetentionFromData = (
     (sum, client) => sum + (client.new_website_leads || 0),
     0
   );
+  console.log({ totalLeads });
   const avgMonthlyNewLeads =
     clientsManaging > 0
       ? Math.round((totalLeads / clientsManaging) * 100) / 100

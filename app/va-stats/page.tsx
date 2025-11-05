@@ -80,7 +80,7 @@ export default function VAStatsPage() {
         },
         {
           key: "sitesAvgCompletionTime",
-          label: "Avg Completion Time",
+          label: "Avg Completion Time (Sites)",
           type: "text", // display pre-formatted duration
           description:
             "Average completion time for sites completed in the date range",
@@ -94,7 +94,7 @@ export default function VAStatsPage() {
         },
         {
           key: "revisionsAvgCompletionTime",
-          label: "Avg Completion Time",
+          label: "Avg Completion Time (Revisions)",
           type: "text", // display pre-formatted duration
           description:
             "Average completion time for revisions completed in the date range",

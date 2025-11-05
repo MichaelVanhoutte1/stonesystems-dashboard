@@ -86,6 +86,84 @@ const getDisplayValue = (value: unknown, type: string): string => {
   return String(value);
 };
 
+const isLikelyUrl = (value: string): boolean => {
+  const v = value.trim().toLowerCase();
+  return (
+    v.startsWith("http://") || v.startsWith("https://") || v.startsWith("www.")
+  );
+};
+
+const normalizeUrl = (value: string): string => {
+  const v = value.trim();
+  if (v.startsWith("http://") || v.startsWith("https://")) return v;
+  if (v.startsWith("www.")) return `https://${v}`;
+  return v;
+};
+
+const isLikelyEmail = (value: string): boolean => {
+  return /.+@.+\..+/.test(value.trim());
+};
+
+const isLikelyPhone = (value: string): boolean => {
+  const digits = value.replace(/[^0-9]/g, "");
+  return digits.length >= 7;
+};
+
+const renderDisplayNode = (value: unknown, type: string): React.ReactNode => {
+  if (value === null || value === undefined) return "N/A";
+
+  if (type === "timestamp" || type === "date") return formatTimestamp(value);
+  if (type === "number")
+    return typeof value === "number" ? value.toFixed(1) : String(value);
+  if (type === "integer")
+    return typeof value === "number"
+      ? Math.round(value).toString()
+      : String(value);
+  if (type === "percentage") return getDisplayValue(value, type);
+
+  const str = String(value).trim();
+  if (!str) return str;
+
+  if (type === "text") {
+    if (isLikelyUrl(str)) {
+      const href = normalizeUrl(str);
+      return (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-indigo-600 hover:text-indigo-800 underline"
+        >
+          {str}
+        </a>
+      );
+    }
+    if (isLikelyEmail(str)) {
+      return (
+        <a
+          href={`mailto:${str}`}
+          className="text-indigo-600 hover:text-indigo-800 underline"
+        >
+          {str}
+        </a>
+      );
+    }
+    if (/^[+()\d\s.-]+$/.test(str) && isLikelyPhone(str)) {
+      const tel = str.replace(/\s+/g, "");
+      return (
+        <a
+          href={`tel:${tel}`}
+          className="text-indigo-600 hover:text-indigo-800 underline"
+        >
+          {str}
+        </a>
+      );
+    }
+  }
+
+  return str;
+};
+
 export default function DataTable<T extends object>({
   config,
   className = "",
@@ -411,10 +489,10 @@ export default function DataTable<T extends object>({
                     const value = (row as any)[
                       column.key as keyof T
                     ] as unknown;
-                    const displayValue =
+                    const displayNode =
                       typeof column.render === "function"
                         ? column.render(value, row)
-                        : getDisplayValue(value, column.type);
+                        : renderDisplayNode(value, column.type);
                     const sticky = isStickyColumn(column.key);
                     const left = sticky ? computeLeft(colIndex) : undefined;
                     const hasPrevSticky =
@@ -449,7 +527,7 @@ export default function DataTable<T extends object>({
                         )} ${sticky ? "sticky z-10" : ""}`}
                         style={cellStyle}
                       >
-                        {displayValue}
+                        {displayNode}
                       </td>
                     );
                   })}

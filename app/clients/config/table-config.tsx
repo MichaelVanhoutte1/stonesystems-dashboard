@@ -102,6 +102,12 @@ export const clientsTableConfig: TableConfig<Client> = {
       description: "Service start date",
     },
     {
+      key: "elapsed_since_start",
+      label: "Time Elapsed",
+      type: "text",
+      description: "Time since start in d h m",
+    },
+    {
       key: "created_at",
       label: "Created At",
       type: "timestamp",

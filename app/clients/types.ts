@@ -36,6 +36,7 @@ export interface Client {
   ai_content_created?: boolean | string | null;
   a2p_provider?: boolean | string | null;
   referrer?: string | null;
+  elapsed_since_start?: string | null;
 }
 
 export interface ClientFilters {
