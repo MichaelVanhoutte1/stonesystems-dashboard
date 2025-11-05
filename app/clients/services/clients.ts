@@ -16,7 +16,11 @@ export const fetchClients = async (
     // Apply filters if provided
     if (filters) {
       if (filters.status) {
-        query = query.eq("status", filters.status);
+        if (Array.isArray(filters.status) && filters.status.length > 0) {
+          query = query.in("status", filters.status);
+        } else if (typeof filters.status === "string" && filters.status) {
+          query = query.eq("status", filters.status);
+        }
       }
       if (filters.csmName) {
         query = query.eq("csm_name", filters.csmName);

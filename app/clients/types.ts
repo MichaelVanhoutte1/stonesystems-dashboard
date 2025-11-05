@@ -40,7 +40,7 @@ export interface Client {
 }
 
 export interface ClientFilters {
-  status?: string;
+  status?: string | string[];
   csmName?: string;
   searchTerm?: string;
 }

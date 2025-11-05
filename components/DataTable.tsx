@@ -443,7 +443,7 @@ export default function DataTable<T extends object>({
                     style={headerStyle}
                   >
                     {column.description && (
-                      <div className="absolute top-0 right-0 w-0 h-0 border-t-[10px] border-l-[10px] border-t-black border-l-transparent"></div>
+                      <div className="absolute top-0 right-0 w-0 h-0 border-t-10 border-l-10 border-t-black border-l-transparent"></div>
                     )}
                     <Tooltip content={column.description || ""}>
                       <div className="flex items-center gap-1.5 text-gray-700">
